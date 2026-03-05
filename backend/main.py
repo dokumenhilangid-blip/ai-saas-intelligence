@@ -229,6 +229,44 @@ def trigger_analysis():
         "generated_at": result.get("generated_at")
     }
 # ─────────────────────────────────────────
+# SHERLOCK ANALYSIS
+# ─────────────────────────────────────────
+@app.get("/sherlock")
+def sherlock_analysis():
+    from backend.sherlock import SherlockAnalyzer
+    analyzer = SherlockAnalyzer()
+    report = analyzer.run_full_analysis()
+    return report
+
+@app.get("/sherlock/signals")
+def sherlock_signals():
+    from backend.sherlock import SherlockAnalyzer
+    analyzer = SherlockAnalyzer()
+    tools = get_tools(limit=500)
+    if not tools:
+        return {"signals": []}
+    signals = analyzer._extract_signals(tools)
+    whitespace = analyzer._find_whitespace(tools)
+    momentum = analyzer._find_momentum_tools(tools)
+    return {
+        "signals": signals,
+        "whitespace": whitespace,
+        "momentum_tools": momentum[:5]
+    }
+
+@app.get("/sherlock/indonesia")
+def sherlock_indonesia():
+    from backend.sherlock import SherlockAnalyzer
+    analyzer = SherlockAnalyzer()
+    tools = get_tools(limit=500)
+    if not tools:
+        return {"opportunities": []}
+    opportunities = analyzer._indonesia_filter(tools)
+    return {
+        "total": len(opportunities),
+        "opportunities": opportunities
+    }
+# ─────────────────────────────────────────
 # RECENT
 # ─────────────────────────────────────────
 @app.get("/recent")
