@@ -284,3 +284,8 @@ def recent(limit: int = Query(20, ge=1, le=100)):
         "total": len(rows),
         "data": [dict(row) for row in rows]
     }
+@app.post("/tools/add")
+def add_tool(tool: dict):
+    from backend.database import insert_tool
+    result = insert_tool(tool)
+    return {"added": result}
