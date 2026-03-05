@@ -7,6 +7,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.database import init_db, get_tools, get_stats, get_connection
+import json
+from datetime import datetime
 
 app = FastAPI(
     title="AI SaaS Intelligence API",
@@ -187,7 +189,45 @@ def trending(limit: int = Query(20, ge=1, le=100)):
         "total": len(rows),
         "data": [dict(row) for row in rows]
     }
-
+# ─────────────────────────────────────────
+# AI ANALYSIS TRIGGER
+# ─────────────────────────────────────────
+@app.get("/analyze")
+def trigger_analysis():
+    from backend.ai_engine import run_ai_analysis
+    from backend.database import get_tools, get_stats, get_connection
+    
+    tools = get_tools(limit=200)
+    stats = get_stats()
+    
+    if not tools:
+        return {"error": "No tools in database yet. Run scraper first."}
+    
+    result = run_ai_analysis(tools, stats)
+    
+    # Simpan insight ke database
+    if result.get("market_insight"):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO insights (title, content, insight_type, generated_at, model_used)
+            VALUES (?, ?, ?, ?, ?)
+        """, (
+            "Market Intelligence Report",
+            json.dumps(result["market_insight"]),
+            "market_overview",
+            datetime.utcnow().isoformat(),
+            "gemini-1.5-flash"
+        ))
+        conn.commit()
+        conn.close()
+    
+    return {
+        "status": "analysis complete",
+        "clusters": result.get("clusters", {}),
+        "market_insight": result.get("market_insight", {}),
+        "generated_at": result.get("generated_at")
+    }
 # ─────────────────────────────────────────
 # RECENT
 # ─────────────────────────────────────────
