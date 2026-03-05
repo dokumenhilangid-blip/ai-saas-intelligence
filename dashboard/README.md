@@ -1,0 +1,2 @@
+# Dashboard
+Next.js frontend
