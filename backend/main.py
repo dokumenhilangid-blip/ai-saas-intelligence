@@ -245,4 +245,4 @@ def recent(limit: int = Query(20, ge=1, le=100)):
     return {
         "total": len(rows),
         "data": [dict(row) for row in rows]
-  }
+    }
