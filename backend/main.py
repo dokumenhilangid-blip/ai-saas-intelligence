@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import sys
@@ -284,8 +284,11 @@ def recent(limit: int = Query(20, ge=1, le=100)):
         "total": len(rows),
         "data": [dict(row) for row in rows]
     }
+from fastapi import Request
+
 @app.post("/tools/add")
-def add_tool(tool: dict):
+async def add_tool(request: Request):
+    tool = await request.json()
     from backend.database import insert_tool
     result = insert_tool(tool)
     return {"added": result}
