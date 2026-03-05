@@ -2,8 +2,8 @@ name: Daily Scraper
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Jam 09.00 WIB setiap hari
-  workflow_dispatch:       # Bisa dijalankan manual juga
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -26,7 +26,3 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DB_PATH: data/ai_saas.db
         run: python -m scraper.run_scraper
-      
-      - name: Trigger Railway redeploy
-        run: |
-          curl -X POST "${{ secrets.RAILWAY_DEPLOY_HOOK }}"
